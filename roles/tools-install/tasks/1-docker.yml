@@ -1,0 +1,29 @@
+---
+
+- name: Install docker
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  block:
+    - name: Install required docker system packages
+      ansible.builtin.apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+          - docker.io
+          - acl
+          - docker-compose
+        state: latest
+        update_cache: true
+
+    - name: Add user to the Docker group
+      ansible.builtin.user:
+        name: "{{ restricted_user }}"
+        groups: docker
+        append: true

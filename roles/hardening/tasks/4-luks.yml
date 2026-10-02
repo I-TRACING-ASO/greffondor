@@ -1,0 +1,100 @@
+---
+
+- name: Check if luks container already created
+  become: true
+  become_method: su
+  become_user: root
+  ansible.builtin.stat:
+    path: /opt/luks_container.img
+  register: hardening_container_file
+
+- name: Setup luks container
+  become: true
+  become_method: su
+  become_user: root
+  when: not hardening_container_file.stat.exists
+  block:
+    - name: Install luks
+      ansible.builtin.apt:
+        pkg: cryptsetup
+        state: latest
+        update_cache: true
+
+    - name: Create initial luks container
+      community.general.filesize:
+        path: /opt/luks_container.img
+        size: 5GB # 20GB !TODO! dev switch
+        blocksize: 1M
+        source: /dev/urandom
+        force: true
+
+    - name: Attach loop device
+      ansible.builtin.command: /usr/sbin/losetup /dev/loop1 /opt/luks_container.img
+      # Add check if /dev/loop1 already used
+
+
+    - name: Create and open luks container LUKS2
+      community.crypto.luks_device:
+        device: "/dev/loop1"
+        state: opened
+        name: luks_container
+        type: luks2
+        cipher: aes-xts-plain64
+        keysize: 256
+        hash: sha256
+        passphrase: "{{ become_password_low }}"
+        pbkdf:
+          algorithm: pbkdf2
+          iteration_count: 1000000
+
+    - name: Create a filesystem on top of a regular file
+      community.general.filesystem:
+        dev: /dev/mapper/luks_container
+        fstype: ext4
+
+    - name: Mount up device luks
+      ansible.posix.mount:
+        path: "/home/{{ restricted_user }}"
+        src: /dev/mapper/luks_container
+        fstype: ext4
+        state: ephemeral
+
+- name: Setup auto decrypt
+  become: true
+  become_method: su
+  become_user: root
+  block:
+
+    - name: Copy luks PAM mount script
+      ansible.builtin.template:
+        src: "check-luks-technician.sh.j2"
+        dest: "/usr/local/sbin/check-luks-technician.sh"
+        owner: "root"
+        group: "root"
+        mode: "0755"
+
+    - name: Copy modified su PAM module
+      ansible.builtin.template:
+        src: "su.j2"
+        dest: "/etc/pam.d/su"
+        owner: root
+        group: root
+        mode: "0644"
+        force: true
+
+    - name: Re-create sudoers subdir directory
+      ansible.builtin.file:
+        state: directory
+        path: /etc/sudoers.d/
+        owner: root
+        group: root
+        mode: "0750"
+
+    - name: Copy modified su PAM module
+      ansible.builtin.template:
+        src: "pam-luks.j2"
+        dest: "/etc/sudoers.d/pam-luks"
+        owner: root
+        group: root
+        mode: "0400"
+        force: true

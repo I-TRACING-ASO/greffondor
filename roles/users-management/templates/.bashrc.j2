@@ -1,0 +1,201 @@
+# ~/.bashrc: executed by bash(1) for non-login shells.
+# see /usr/share/doc/bash/examples/startup-files (in the package bash-doc)
+# for examples
+
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# don't put duplicate lines or lines starting with space in the history.
+# See bash(1) for more options
+HISTCONTROL=ignoreboth
+
+# append to the history file, don't overwrite it
+shopt -s histappend
+
+# for setting history length see HISTSIZE and HISTFILESIZE in bash(1)
+HISTSIZE=1000
+HISTFILESIZE=2000
+
+# check the window size after each command and, if necessary,
+# update the values of LINES and COLUMNS.
+shopt -s checkwinsize
+
+# If set, the pattern "**" used in a pathname expansion context will
+# match all files and zero or more directories and subdirectories.
+#shopt -s globstar
+
+# make less more friendly for non-text input files, see lesspipe(1)
+#[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+# set variable identifying the chroot you work in (used in the prompt below)
+if [ -z "${debian_chroot:-}" ] && [ -r /etc/debian_chroot ]; then
+    debian_chroot=$(cat /etc/debian_chroot)
+fi
+
+# set a fancy prompt (non-color, unless we know we "want" color)
+case "$TERM" in
+    xterm-color|*-256color) color_prompt=yes;;
+esac
+
+# uncomment for a colored prompt, if the terminal has the capability; turned
+# off by default to not distract the user: the focus in a terminal window
+# should be on the output of commands, not on the prompt
+force_color_prompt=yes
+
+if [ -n "$force_color_prompt" ]; then
+    if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
+	# We have color support; assume it's compliant with Ecma-48
+	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+	# a case would tend to support setf rather than setaf.)
+	color_prompt=yes
+    else
+	color_prompt=
+    fi
+fi
+
+if [ "$color_prompt" = yes ]; then
+    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w \$\[\033[00m\] '
+else
+    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
+fi
+unset color_prompt force_color_prompt
+
+# If this is an xterm set the title to user@host:dir
+case "$TERM" in
+xterm*|rxvt*)
+    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
+    ;;
+*)
+    ;;
+esac
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# colored GCC warnings and errors
+#export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+
+# some more ls aliases
+#alias ll='ls -l'
+#alias la='ls -A'
+#alias l='ls -CF'
+
+# Alias definitions.
+# You may want to put all your additions into a separate file like
+# ~/.bash_aliases, instead of adding them here directly.
+# See /usr/share/doc/bash-doc/examples in the bash-doc package.
+
+if [ -f ~/.bash_aliases ]; then
+    . ~/.bash_aliases
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+export PATH=$PATH:~/.local/bin
+disable-banner() {
+    touch ~/.disable-banner
+}
+
+LOG_JSON_SCRIPT="$HOME/.local/bin/shell-command-logger.sh"
+export PROMPT_COMMAND='__log_bash_cmd; '"$PROMPT_COMMAND"
+
+__log_bash_cmd() {
+  local cmd=$(history 1 | sed "s/^[ ]*[0-9]*[ ]*//")
+  local start_ts=$(date --iso-8601=seconds)
+  local start_epoch=$(date +%s.%N)
+  export __LAST_CMD="$cmd"
+  export __LAST_TS="$start_ts"
+  export __LAST_EPOCH="$start_epoch"
+}
+
+trap '__log_bash_exec' DEBUG
+
+__log_bash_exec() {
+  local cmd="$__LAST_CMD"
+  local start_ts="$__LAST_TS"
+  local start_epoch="$__LAST_EPOCH"
+  local end_ts=$(date --iso-8601=seconds)
+  local end_epoch=$(date +%s.%N)
+  local duration=$(awk -v s="$start_epoch" -v e="$end_epoch" 'BEGIN { printf "%.3f", e - s }')
+  local ret_code=$?
+  "$LOG_JSON_SCRIPT" "$cmd" "$start_ts" "$end_ts" "$duration" "$ret_code"
+}
+
+cd $HOME
+
+export GREP_COLOR='1;32'
+
+banner() {
+    local RESET="\e[0m"
+    local BOLD="\e[1m"
+    local RED="\e[31m"
+    local GREEN="\e[32m"
+    local YELLOW="\e[33m"
+    local CYAN="\e[36m"
+
+    printf "\n${BOLD}${CYAN}=== $(hostname) Status ===${RESET}\n\n"
+
+    # 1️⃣ Manual start hint
+    printf "${YELLOW}⚙️  NetAlertX is not auto‑started.${RESET}\n"
+    printf "   Start it manually with:\n"
+    printf "      ${GREEN}docker-compose -f ~/NetAlertX/NetAlertX.yml up -d${RESET}\n\n"
+
+    # 2️⃣ Service access info
+    printf "${BOLD}${CYAN}🔗 Accessible on VPN IP:${RESET}\n"
+    printf "   ${YELLOW}IP: ${CYAN}%s${RESET}\n" "$(ip -4 addr show dev wg0 | awk '/inet /{print $2}' | cut -d/ -f1)"
+    printf "   ${YELLOW}Port: ${CYAN}20211${RESET}\n\n"
+
+    # 3️⃣ Current default gateway (out‑to‑internet)
+    local GW="$(ip route show default | awk '{print $3}')"
+    printf "${BOLD}${CYAN}🌐 Default Internet Gateway:${RESET}\n"
+    printf "   ${YELLOW}%s${RESET}\n\n" "$GW"
+
+    # 4️⃣ WireGuard VPN status
+    if systemctl is-active --quiet wg-quick@wg0; then
+        local WG_STATUS="UP"
+    else
+        local WG_STATUS="DOWN"
+    fi
+    printf "${BOLD}${CYAN}🔌 WireGuard (wg0) Status:${RESET}\n"
+    #printf "   ${YELLOW}%s${RESET}\n\n" "$WG_STATUS"
+    printf "   ${YELLOW}%s${RESET}\n\n"  "$WG_STATUS"
+    
+    # 5️⃣ Exegol
+    printf "${BOLD}${CYAN}🪐 Exegol status:${RESET}\n"
+    ~/.local/bin/exegol info --accept-eula
+
+    # 6️⃣ Admin / help scripts
+    printf "${BOLD}${CYAN}🛠️  Administration & Help:${RESET}\n"
+    printf "   Run ${GREEN}control${RESET} for a list of available admin scripts.\n\n"
+
+    # 7️⃣  Disable this
+    printf "${BOLD}${CYAN}❌ to disable this banner next time:${RESET}\n"
+    printf "   Run ${GREEN}banner-disable${RESET}\n\n"
+
+}
+
+if [ ! -f '~/.disable-banner' ]
+then
+  banner
+fi

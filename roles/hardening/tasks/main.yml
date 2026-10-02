@@ -1,0 +1,13 @@
+---
+
+- name: Change hostname
+  ansible.builtin.include_tasks: "1-hostname.yml"
+
+- name: Harden sudo
+  ansible.builtin.include_tasks: "2-sudo.yml"
+
+- name: Harden ssh
+  ansible.builtin.include_tasks: "3-ssh.yml"
+
+- name: Setup luks container
+  ansible.builtin.include_tasks: "4-luks.yml"

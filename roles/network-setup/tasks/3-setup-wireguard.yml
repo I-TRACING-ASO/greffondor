@@ -1,0 +1,33 @@
+---
+- name: Setup wireguard
+  become: true
+  become_method: su
+  become_user: root
+  block:
+    - name: Install WireGuard packages
+      ansible.builtin.apt:
+        name:
+          - wireguard
+          - wireguard-tools
+        state: present
+        update_cache: true
+
+    - name: Ensure /etc/wireguard exists
+      ansible.builtin.file:
+        path: /etc/wireguard
+        state: directory
+        mode: "0700"
+
+    - name: Deploy wg0.conf
+      ansible.builtin.template:
+        src: "wg0.conf.j2"
+        dest: "{{ wg_conf_path }}"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Enable wireguard service
+      ansible.builtin.systemd_service:
+        name: wg-quick@wg0.service
+        state: started
+        enabled: true

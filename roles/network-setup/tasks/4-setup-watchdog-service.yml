@@ -1,0 +1,41 @@
+---
+- name: Setup watchdog service
+  become: true
+  become_method: su
+  become_user: root
+  block:
+    - name: Copy file watchdog.sh with owner and permissions
+      ansible.builtin.copy:
+        src: watchdog.sh
+        dest: /usr/local/bin/watchdog.sh
+        owner: root
+        group: root
+        mode: '0744'
+
+    - name: Copy file watchdog.timer with owner and permissions
+      ansible.builtin.copy:
+        src: watchdog.timer
+        dest: /etc/systemd/system/watchdog.timer
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Copy file watchdog.service with owner and permissions
+      ansible.builtin.copy:
+        src: watchdog.service
+        dest: /etc/systemd/system/watchdog.service
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Issue daemon-reload to pick up config changes and enable timer
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+        name: watchdog.timer
+        enabled: true
+        state: started
+
+    - name: Issue daemon-reload to pick up config changes and start service
+      ansible.builtin.systemd_service:
+        name: watchdog.service
+        state: started

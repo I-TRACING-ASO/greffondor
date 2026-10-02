@@ -1,0 +1,19 @@
+---
+
+- name: Harden sudo
+  become: true
+  become_method: su
+  become_user: root
+  block:
+    - name: Remove all sudoers files except default one
+      ansible.builtin.file:
+        path: "/etc/sudoers.d"
+        state: absent
+
+    - name: Replace sudoers file with locked‑down version
+      ansible.builtin.template:
+        src: "sudoers.j2"
+        dest: "/etc/sudoers"
+        owner: root
+        group: root
+        mode: "0440"

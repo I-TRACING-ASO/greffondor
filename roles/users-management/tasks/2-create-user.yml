@@ -1,0 +1,32 @@
+---
+- name: Create restricted local-only user
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  block:
+    - name: Ensure restricted user exists
+      ansible.builtin.user:
+        name: "{{ restricted_user }}"
+        shell: "{{ restricted_shell }}"
+        groups: "{{ restricted_groups }}"
+        password: "{{ become_password_low | password_hash('sha512') }}"
+        append: true
+        create_home: true
+
+    - name: Copy bashrc for user
+      ansible.builtin.template:
+        src: "../templates/.bashrc.j2"
+        dest: "/home/{{ restricted_user }}/.bashrc"
+        owner: "{{ restricted_user }}"
+        group: "{{ restricted_user }}"
+        mode: "0700"
+
+    - name: Recursively change ownership of user home
+      ansible.builtin.file:
+        path: "/home/{{ restricted_user }}"
+        state: directory
+        recurse: true
+        owner: "{{ restricted_user }}"
+        group: "{{ restricted_user }}"

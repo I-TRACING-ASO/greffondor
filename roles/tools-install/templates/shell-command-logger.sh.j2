@@ -1,0 +1,64 @@
+#!/bin/bash
+
+CUSER="$(whoami)-{{ item }}"
+CHOSTNAME="$(hostname)-{{ item }}"
+SHELL_USED="$SHELL"
+
+CMD="${1-}"
+START_TS="${2-}"
+END_TS="${3-}"
+DURATION="${4-0}"
+EXIT_CODE="${5-0}"
+OUTPUT="${6-}"
+CPWD="${7-}"
+
+LOGDIR="$HOME/.session_logs_json"
+mkdir -p "$LOGDIR"
+LOGFILE="$LOGDIR/log_$(date +'%Y-%m-%d').jsonl"
+
+IP_PUBLIC=$(curl -s --max-time 3 https://api.ipify.org)
+IP_PRIVATE_JSON=$(ip -o -4 addr show | awk '!/ lo / {print $4}' | cut -d/ -f1 | jq -R -s -c 'split("\n")[:-1]')
+
+if [[ -z "$IP_PRIVATE_JSON" ]]; then
+  IP_PRIVATE_JSON="[]"
+fi
+
+if [[ -n "$IP_PUBLIC" ]]; then
+  GEO=$(curl -s --max-time 3 "https://ipinfo.io/${IP_PUBLIC}/json" | jq -c '{city, region, country, loc, org}')
+else
+  GEO="null"
+fi
+
+json_line="$(
+  jq -n -c \
+    --arg start "$START_TS" \
+    --arg end "$END_TS" \
+    --arg duration "$DURATION" \
+    --arg user "$CUSER" \
+    --arg host "$CHOSTNAME" \
+    --arg shell "$SHELL_USED" \
+    --arg ip_pub "$IP_PUBLIC" \
+    --arg ip_priv "$IP_PRIVATE_JSON" \
+    --arg geo "$GEO_JSON" \
+    --arg cmd "$CMD" \
+    --arg output "$OUTPUT" \
+    --arg exit_code "$EXIT_CODE" \
+    --arg cpath "$CPWD" \
+    '{
+      timestamp_start: $start,
+      timestamp_end: $end,
+      duration_seconds: ($duration|tonumber? // 0),
+      user: $user,
+      host: $host,
+      shell: $shell,
+      ip_public: $ip_pub,
+      ip_private: ($ip_priv|fromjson? // []),
+      geo: ($geo|fromjson? // null),
+      command: $cmd,
+      exit_code: ($exit_code|tonumber? // 0),
+      output: $output,
+      path: $cpath
+    }'
+)"
+
+printf '%s\n' "$json_line" >> "$LOGFILE"

@@ -1,0 +1,59 @@
+---
+- name: Setup network
+  become: true
+  become_method: su
+  become_user: root
+  block:
+    - name: Install dnsutils / dhclient
+      ansible.builtin.apt:
+        name:
+          - dnsutils
+          - resolvconf
+          - isc-dhcp-client
+        state: present
+        update_cache:
+
+    - name: Set ipv4.never-default = true on netplan-eth0
+      community.general.nmcli:
+        conn_name: "netplan-eth0"
+        type: ethernet
+        state: present
+        never_default4: true
+
+    - name: Ensure eth1 ethernet connection with autoconnect
+      community.general.nmcli:
+        conn_name: eth1
+        ifname: eth1
+        type: ethernet
+        state: present
+        autoconnect: true
+        method4: manual
+        ip4: 192.168.8.101/24
+        gw4: 192.168.8.1
+
+    - name: Setup netplan eth0 network
+      ansible.builtin.template:
+        src: "eth0.yaml.j2"
+        dest: "/etc/netplan/eth0.yaml"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Setup netplan eth1 network
+      ansible.builtin.template:
+        src: "eth1.yaml.j2"
+        dest: "/etc/netplan/eth1.yaml"
+        owner: root
+        group: root
+        mode: "0600"
+
+
+    - name: Set DNS nameservers
+      ansible.builtin.copy:
+        dest: /etc/resolvconf/resolv.conf.d/head
+        content: |
+          nameserver 8.8.8.8
+          nameserver 8.8.4.4
+
+    - name: Reload resolvconf
+      ansible.builtin.command: /usr/sbin/resolvconf -u

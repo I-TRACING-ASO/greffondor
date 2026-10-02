@@ -1,0 +1,26 @@
+---
+- name: Setup NetAlertx
+  become: true
+  become_method: su
+  become_user: "{{ restricted_user }}"
+  vars:
+    ansible_become_password: "{{ become_password_low }}"
+  block:
+    - name: Deploy NetAlertX
+      ansible.builtin.file:
+        path: /home/{{ restricted_user }}/NetAlertX/data
+        state: directory
+        mode: '0755'
+
+    - name: Copy NetAlertX compose template
+      ansible.builtin.template:
+        src: NetAlertX.yml.j2
+        dest: /home/{{ restricted_user }}/NetAlertX/NetAlertX.yml
+        mode: '0644'
+
+  # - name: Start NetAlertX docker compose
+  #   community.docker.docker_compose_v2:
+  #     project_src: /home/{{ restricted_user }}/NetAlertX
+  #     files:
+  #       - NetAlertX.yml
+  #     state: present

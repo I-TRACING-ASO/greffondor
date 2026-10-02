@@ -1,0 +1,10 @@
+---
+- name: Set root password
+  become: true
+  become_method: sudo
+  vars:
+    ansible_become_password: "{{ become_password_low }}"
+  ansible.builtin.user:
+    name: root
+    password: "{{ become_password_root | password_hash('sha512') }}"
+    update_password: always

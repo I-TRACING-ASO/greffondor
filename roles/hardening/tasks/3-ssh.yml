@@ -1,0 +1,35 @@
+---
+- name: Harden SSH configuration
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    syslog_facility: AUTHPRIV
+    log_level: INFO
+  block:
+    - name: Update banner message
+      ansible.builtin.copy:
+        dest: /etc/issue.net
+        content: |
+          #################################################################
+          *                                                               #
+          * This system is for the use of authorized users only.          #
+          * Usage of this system monitored & recorded by system personnel.#
+          *                                                               #
+          #################################################################
+        owner: root
+        group: root
+        mode: '0744'
+
+    - name: Copy custom ssh conf
+      ansible.builtin.template:
+        src: "sshd_config.j2"
+        dest: "/etc/ssh/sshd_config"
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: Restart SSHD service
+      ansible.builtin.systemd_service:
+        name: sshd
+        state: restarted

@@ -1,0 +1,50 @@
+---
+- name: Initial setup root
+  hosts: greffons
+  tasks:
+    - name: Setup root password
+      ansible.builtin.include_tasks: "roles/users-management/tasks/1-configure-root.yml"
+
+- name: Initial Update raspberry pi
+  hosts: greffons
+  become: true
+  become_method: su
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  tasks:
+    - name: Update apt-get repo and cache
+      ansible.builtin.apt:
+        update_cache: yes
+        force_apt_get: yes
+        cache_valid_time: 3600
+
+    - name: Upgrade all apt packages
+      ansible.builtin.apt:
+        upgrade: dist
+        force_apt_get: yes
+
+- name: Setup network and hardening stuff
+  hosts: greffons
+  roles:
+    - network-setup
+    - hardening
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+    
+- name: Setup user after creating luks
+  hosts: greffons
+  tasks:
+    - name: Create user after creating luks
+      ansible.builtin.include_tasks: "roles/users-management/tasks/2-create-user.yml"
+
+- name: Provision greffondor tools
+  hosts: greffons
+  roles:
+    - tools-install
+
+# - name: Unit test deployment
+#   hosts: greffons
+#   roles:
+#     - unit-tests
+#   vars:
+#     ansible_become_password: "{{ become_password_root }}"

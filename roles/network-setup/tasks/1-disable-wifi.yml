@@ -1,0 +1,17 @@
+---
+- name: Disable wifi
+  become: true
+  become_method: su
+  become_user: root
+  block:
+    - name: Disable wlan0 immediately
+      command: ip link set wlan0 down
+
+    - name: Persistently disable wlan0 using systemd-networkd
+      ansible.builtin.copy:
+        dest: /etc/systemd/network/99-disable-wlan0.link
+        content: |
+          [Match]
+          Name=wlan0
+          [Link]
+          AdministrativeState=down

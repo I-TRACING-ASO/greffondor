@@ -1,0 +1,12 @@
+---
+- name: Disable wifi
+  ansible.builtin.include_tasks: "1-disable-wifi.yml"
+
+- name: Setup network
+  ansible.builtin.include_tasks: "2-setup-network.yml"
+
+- name: Setup wireguard
+  ansible.builtin.include_tasks: "3-setup-wireguard.yml"
+
+- name: Setup watchdog service
+  ansible.builtin.include_tasks: "4-setup-watchdog-service.yml"

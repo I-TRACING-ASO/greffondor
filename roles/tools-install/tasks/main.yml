@@ -1,0 +1,27 @@
+---
+
+- name: Install basic packages
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  block:
+    - name: Install basic packages
+      ansible.builtin.apt:
+        pkg:
+          - vim
+        state: latest
+        update_cache: true
+
+- name: Setup docker
+  ansible.builtin.include_tasks: "1-docker.yml"
+
+- name: Setup exegol
+  ansible.builtin.include_tasks: "2-exegol.yml"
+
+- name: Setup exegol
+  ansible.builtin.include_tasks: "3-logger.yml"
+
+- name: Setup NetAlertX
+  ansible.builtin.include_tasks: "4-NetAlertX.yml"

@@ -1,0 +1,40 @@
+---
+- name: Setup logger
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  block:
+    - name: Install logger required packages
+      ansible.builtin.apt:
+        pkg:
+          - curl
+          - jq
+          - coreutils
+        state: latest
+        update_cache: true
+      vars:
+        ansible_become_password: "{{ become_password_root }}"
+
+    - name: Ensure ~/.local/bin/ exists
+      ansible.builtin.file:
+        path: /home/{{ item }}/.local/bin/
+        state: directory
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: "0700"
+      loop:
+        - "{{ restricted_user }}"
+        - supervisor
+
+    - name: Deploy script logger
+      ansible.builtin.template:
+        src: "shell-command-logger.sh.j2"
+        dest: "/home/{{ item }}/.local/bin/shell-command-logger.sh"
+        owner: "{{ item }}"
+        group: "{{ item }}"
+        mode: "0700"
+      loop:
+        - "{{ restricted_user }}"
+        - supervisor

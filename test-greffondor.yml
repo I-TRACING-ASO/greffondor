@@ -1,0 +1,8 @@
+---
+
+- name: Unit test deployment
+  hosts: greffons
+  roles:
+    - unit-tests
+  vars:
+    ansible_become_password: "{{ become_password_root }}"

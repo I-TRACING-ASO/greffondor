@@ -1,0 +1,31 @@
+#!/bin/bash
+
+CONTAINER="/opt/luks_container.img"
+MOUNTPOINT="/home/{{ restricted_user }}"
+NAME="luks_container" 
+
+[ "$PAM_USER" != "{{ restricted_user }}" ] && exit 0
+
+# Check if already mounted
+if mountpoint -q "$MOUNTPOINT"; then
+  logger "LUKS for {{ restricted_user }} already mounted"
+  exit 0
+fi
+
+# Get user password, which is same for luks container
+read -r -s PASSWORD
+PASSWORD=$(echo -n "$PASSWORD" | tr -d '\n\r \t')
+[ -z "$PASSWORD" ] && exit 1
+
+# Remove junk and pass to cryptsetup 
+printf '%s' "$PASSWORD" | sudo cryptsetup luksOpen "$CONTAINER" "$NAME" -d -
+
+sudo mount "/dev/mapper/$NAME" "$MOUNTPOINT"
+
+if [ $? -eq 0 ]; then
+  logger "LUKS mounted"
+  exit 0
+else
+  logger "Fail to mount LUKS"
+  exit 1
+fi

@@ -1,0 +1,30 @@
+---
+- name: Install exegol required packages
+  become: true
+  become_method: su
+  become_user: root
+  ansible.builtin.apt:
+    pkg:
+      - git
+      - python3
+      - pipx
+      - acl
+    state: latest
+    update_cache: true
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+
+- name: Install exegol
+  become: true
+  become_method: su
+  become_user: "{{ restricted_user }}"
+  vars:
+    ansible_become_password: "{{ become_password_low }}"
+  block:
+    - name: Install python package
+      community.general.pipx:
+        name: exegol
+
+  # - name: Install free image
+  #   ansible.builtin.command: "/home/{{ restricted_user }}/.local/bin/exegol install free --accept-eula -F"
+  #   when: install_image is true

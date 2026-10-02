@@ -1,0 +1,6 @@
+vars/root_password
+inventory/hosts.yml
+secrets.yml
+test_raspberry
+*.tar
+notes.txt

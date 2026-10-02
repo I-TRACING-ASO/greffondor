@@ -1,0 +1,45 @@
+---
+
+- name: Change device hostname
+  become: true
+  become_method: su
+  become_user: root
+  block:
+    - name: Set a hostname
+      ansible.builtin.hostname:
+        name: "{{ pi_hostname }}"
+
+    - name: Copy custom hosts conf with new hostname
+      ansible.builtin.template:
+        src: "hosts.j2"
+        dest: "/etc/hosts"
+        owner: root
+        group: root
+        mode: "0644"
+
+
+    - name: Copy custom hosts conf with new hostname
+      ansible.builtin.template:
+        src: "hosts.j2"
+        dest: "/etc/cloud/templates/hosts.debian.tmpl"
+        owner: root
+        group: root
+        mode: "0644"
+        force: true
+
+
+    - name: Copy custom hostname file for perist
+      ansible.builtin.template:
+        src: "hostname.j2"
+        dest: "/etc/hostname"
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Copy file with owner and permissions
+      ansible.builtin.copy:
+        src: 99-disable-hostname.cfg
+        dest: /etc/cloud/cloud.cfg.d/99-disable-hostname.cfg
+        owner: root
+        group: root
+        mode: '0644'

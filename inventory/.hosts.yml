@@ -19,7 +19,7 @@ all:
         wg_server_pubkey: "<REDACTED_SERVER_PUBLIC_KEY>"
 
         # ---- WireGuard client (Pi) secrets ----
-        wg_private_key: "<REDACTED_CLIENT_PRIVATE_KEY>"
+        # IN VAULT
 
         # ---- Interface preferences for “force eth1” logic ----
         wg_interface: wg0
@@ -28,13 +28,18 @@ all:
         wg_force_iface: eth1 # Interface name : eth1 for Huawei USB dongle, wwan for SIM7600E
         wg_block_iface: eth0
 
-        # Hostname to set
+        # Hostname and MAC to set
         pi_hostname: DEV-XXXXX-004
+        mac_address: 10:C5:95:32:de:22 # Lenovo MAC
 
         # Restricted user params
         restricted_user: technician
         restricted_shell: /bin/bash
         restricted_groups: sudo
 
-        # exegol
+        # Luks
+        luks_size: 20 # In GB
+
+        # Tools
+        start_NetAlertX_on_provision: false
         install_image: true

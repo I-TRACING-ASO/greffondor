@@ -5,44 +5,44 @@
   become_method: su
   become_user: root
   block:
-  - name: Check DNS are correct
-    ansible.builtin.assert:
-      that:
-        - ansible_facts['dns']['nameservers'] | first == "8.8.8.8"
-      fail_msg: "Wrong DNS setup"
+    - name: Check DNS are correct
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['dns']['nameservers'] | first == "8.8.8.8"
+        fail_msg: "Wrong DNS setup"
 
-  - name: Check wireguard interface
-    ansible.builtin.fail:
-      msg: "Wireguard interface does not exist"
-    when: ansible_facts['wg0'] is undefined
+    - name: Check wireguard interface
+      ansible.builtin.fail:
+        msg: "Wireguard interface does not exist"
+      when: ansible_facts['wg0'] is undefined
 
-  - name: Check that hostname is set with config value
-    ansible.builtin.assert:
-      that:
-        - ansible_facts.hostname == pi_hostname
-        - ansible_facts.fqdn == pi_hostname
-      fail_msg: "Hostname is not setup as it should"
+    - name: Check that hostname is set with config value
+      ansible.builtin.assert:
+        that:
+          - ansible_facts.hostname == pi_hostname
+          - ansible_facts.fqdn == pi_hostname
+        fail_msg: "Hostname is not setup as it should"
 
-  - name: Curl ifconfig to check internet
-    ansible.builtin.uri:
-      url: "https://ifconfig.io"
-      method: GET
-      status_code: [200, 201]
-      timeout: 60
+    - name: Curl ifconfig to check internet
+      ansible.builtin.uri:
+        url: "https://ifconfig.io"
+        method: GET
+        status_code: [200, 201]
+        timeout: 60
 
-  - name: Check several routes
-    ansible.builtin.command: ip route get "{{ item }}"
-    register: output_route
-    loop:
-      - 10.10.35.54
-      - 172.16.1.24
-      - 192.168.1.84
-      - 8.8.8.8
-      - 10.0.0.1
+    - name: Check several routes
+      ansible.builtin.command: ip route get "{{ item }}"
+      register: output_route
+      loop:
+        - 10.10.35.54
+        - 172.16.1.24
+        - 192.168.1.84
+        - 8.8.8.8
+        - 10.0.0.1
 
-  - name: Print gateway use for route
-    debug:
-      msg: "{{ item.item }} will pass though{{ item.stdout | regex_search(' [0-9]+.[0-9]+.[0-9]+.[0-9]+') }}"
-    loop: "{{ output_route.results | list }}"
-    loop_control:
-      label: "-"
+    - name: Print gateway use for route
+      ansible.builtin.debug:
+        msg: "{{ item.item }} will pass though{{ item.stdout | regex_search(' [0-9]+.[0-9]+.[0-9]+.[0-9]+') }}"
+      loop: "{{ output_route.results | list }}"
+      loop_control:
+        label: "-"

@@ -18,9 +18,10 @@
         dest: /home/{{ restricted_user }}/NetAlertX/NetAlertX.yml
         mode: '0644'
 
-  # - name: Start NetAlertX docker compose
-  #   community.docker.docker_compose_v2:
-  #     project_src: /home/{{ restricted_user }}/NetAlertX
-  #     files:
-  #       - NetAlertX.yml
-  #     state: present
+    - name: Start NetAlertX docker compose
+      community.docker.docker_compose_v2:
+        project_src: /home/{{ restricted_user }}/NetAlertX
+        files:
+          - NetAlertX.yml
+        state: present
+      when: start_NetAlertX_on_provision

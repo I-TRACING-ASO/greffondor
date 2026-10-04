@@ -17,7 +17,6 @@
         group: root
         mode: "0644"
 
-
     - name: Copy custom hosts conf with new hostname
       ansible.builtin.template:
         src: "hosts.j2"
@@ -26,7 +25,6 @@
         group: root
         mode: "0644"
         force: true
-
 
     - name: Copy custom hostname file for perist
       ansible.builtin.template:

@@ -1,0 +1,34 @@
+---
+
+- name: Setup all scripts
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    loot_dir: "/home/{{ restricted_user }}/loot"
+    script_dir: "/home/{{ restricted_user }}/script"
+  block:
+    - name: Create loot capture dir
+      become: true
+      become_method: su
+      become_user: root
+      ansible.builtin.file:
+        state: directory
+        path: "{{ loot_dir }}"
+        owner: "{{ restricted_user }}"
+        group: "{{ restricted_user }}"
+        mode: "0700"
+
+    - name: Create script dir
+      become: true
+      become_method: su
+      become_user: root
+      ansible.builtin.file:
+        state: directory
+        path: "{{ script_dir }}"
+        owner: "{{ restricted_user }}"
+        group: "{{ restricted_user }}"
+        mode: "0700"
+
+    - name: Setup net-sniffer
+      ansible.builtin.include_tasks: "1-net-sniffer.yml"

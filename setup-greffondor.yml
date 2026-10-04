@@ -26,7 +26,7 @@
 - name: Setup network and hardening stuff
   hosts: greffons
   roles:
-    - network-setup
+    - network
     - hardening
   vars:
     ansible_become_password: "{{ become_password_root }}"
@@ -42,9 +42,17 @@
   roles:
     - tools-install
 
+- name: Setup offensive scripts
+  hosts: greffons
+  roles:
+    - offensive-scripts
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  
 - name: Unit test deployment
   hosts: greffons
   roles:
     - unit-tests
   vars:
     ansible_become_password: "{{ become_password_root }}"
+

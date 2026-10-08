@@ -23,15 +23,13 @@
     - name: Create initial luks container
       community.general.filesize:
         path: /opt/luks_container.img
-        size: 5GB # 20GB !TODO! dev switch
+        size: "{{ luks_size }}GB"
         blocksize: 1M
         source: /dev/urandom
         force: true
 
     - name: Attach loop device
       ansible.builtin.command: /usr/sbin/losetup /dev/loop1 /opt/luks_container.img
-      # Add check if /dev/loop1 already used
-
 
     - name: Create and open luks container LUKS2
       community.crypto.luks_device:
@@ -64,7 +62,6 @@
   become_method: su
   become_user: root
   block:
-
     - name: Copy luks PAM mount script
       ansible.builtin.template:
         src: "check-luks-technician.sh.j2"

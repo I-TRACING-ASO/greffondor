@@ -25,6 +25,6 @@
       community.general.pipx:
         name: exegol
 
-  # - name: Install free image
-  #   ansible.builtin.command: "/home/{{ restricted_user }}/.local/bin/exegol install free --accept-eula -F"
-  #   when: install_image is true
+- name: Install free image
+  ansible.builtin.command: "/home/{{ restricted_user }}/.local/bin/exegol install free --accept-eula -F"
+  when: install_image is true

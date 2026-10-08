@@ -1,0 +1,24 @@
+---
+
+- name: Setup capture dir
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    capture_dir: "{{ loot_dir }}/netcapture"
+  block:
+    - name: Create loot capture dir
+      ansible.builtin.file:
+        state: directory
+        path: "{{ capture_dir }}"
+        owner: "{{ restricted_user }}"
+        group: "{{ restricted_user }}"
+        mode: "0700"
+
+    - name: Copy sniffer script
+      ansible.builtin.template:
+        src: "net-sniffer.sh.j2"
+        dest: "{{ script_dir }}/net-sniffer.sh"
+        owner: "{{ restricted_user }}"
+        group: "{{ restricted_user }}"
+        mode: "0700"

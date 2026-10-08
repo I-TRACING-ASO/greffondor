@@ -1,0 +1,12 @@
+network:
+  version: 2
+  ethernets:
+    eth0:
+      renderer: NetworkManager
+      match:
+        macaddress: "{{ ansible_facts['eth0']['macaddress'] }}"
+      macaddress: "{{ mac_address }}"
+      dhcp4: true
+      dhcp6: true
+      networkmanager:
+        name: "netplan-eth0"

@@ -1,0 +1,42 @@
+all:
+  children:
+    servers:
+      hosts:
+        raspberryPi:
+          ansible_host: <LOCAL PI IP>
+          ansible_user: supervisor
+          ansible_ssh_private_key_file: <PATH/TO/PI/PRIVATE/KEY>
+          ansible_python_interpreter: /usr/bin/python3
+          ansible_ssh_common_args: "-o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
+
+      vars:
+        # ---- dev mode ----
+        is_dev: true
+
+        # ---- WireGuard endpoint (server) ----
+        wg_server_ip: <VPN SERVER IP>
+        wg_server_port: 51820
+        wg_server_pubkey: "<WG SERVER PUBKEY>"
+
+        # ---- WireGuard client (Pi) ----
+        wg_client_ip: 10.0.0.2/32
+
+        # ---- Network Interface ----
+        mobile_iface: eth1 # Interface name : eth1 for Huawei USB dongle, wwan for SIM7600E
+        lan_iface: eth0
+
+        # Hostname and MAC to set
+        pi_hostname: DEV-INFRA-004
+        mac_address: 10:C5:95:32:de:22 # Lenovo MAC
+
+        # Restricted user params
+        restricted_user: technician
+        restricted_shell: /bin/bash
+        restricted_groups: sudo
+
+        # Luks
+        luks_size: 20 # In GB
+
+        # Tools
+        start_NetAlertX_on_provision: false
+        install_image: true

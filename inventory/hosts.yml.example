@@ -4,7 +4,7 @@ all:
       hosts:
         raspberryPi:
           ansible_host: <LOCAL PI IP>
-          ansible_user: <PI USER>
+          ansible_user: supervisor
           ansible_ssh_private_key_file: <PATH/TO/PI/PRIVATE/KEY>
           ansible_python_interpreter: /usr/bin/python3
           ansible_ssh_common_args: "-o IdentitiesOnly=yes -o StrictHostKeyChecking=accept-new"
@@ -14,22 +14,19 @@ all:
         is_dev: true
 
         # ---- WireGuard endpoint (server) ----
-        wg_server_ip: <AZURE VM IP>
-        wg_server_port: <WG SERVER PORT>
-        wg_server_pubkey: "<REDACTED_SERVER_PUBLIC_KEY>"
+        wg_server_ip: <VPN SERVER IP>
+        wg_server_port: 51820
+        wg_server_pubkey: "<WG SERVER PUBKEY>"
 
-        # ---- WireGuard client (Pi) secrets ----
-        # IN VAULT
+        # ---- WireGuard client (Pi) ----
+        wg_client_ip: 10.0.0.2/32
 
-        # ---- Interface preferences for “force eth1” logic ----
-        wg_interface: wg0
-        wg_reconnect_interval: 1min
-        wg_handshake_max_age: 120
-        wg_force_iface: eth1 # Interface name : eth1 for Huawei USB dongle, wwan for SIM7600E
-        wg_block_iface: eth0
+        # ---- Network Interface ----
+        mobile_iface: eth1 # Interface name : eth1 for Huawei USB dongle, wwan for SIM7600E
+        lan_iface: eth0
 
         # Hostname and MAC to set
-        pi_hostname: DEV-XXXXX-004
+        pi_hostname: DEV-INFRA-004
         mac_address: 10:C5:95:32:de:22 # Lenovo MAC
 
         # Restricted user params

@@ -26,3 +26,6 @@
 
 - name: Setup NetAlertX
   ansible.builtin.include_tasks: "4-NetAlertX.yml"
+
+- name: Install Ligolo
+  ansible.builtin.include_tasks: "5-ligolo.yml"

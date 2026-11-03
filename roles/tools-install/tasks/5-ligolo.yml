@@ -1,0 +1,51 @@
+---
+- name: Get ligolo
+  become: true
+  become_method: su
+  become_user: "{{ restricted_user }}"
+  vars:
+    ansible_become_password: "{{ become_password_low }}"
+  block:
+    - name: Pause play until a URL is reachable from this host
+      ansible.builtin.uri:
+        url: "https://api.github.com/repos/nicocha30/ligolo-ng/releases/latest"
+        follow_redirects: none
+        method: GET
+      register: _result_ligolo
+      until: _result_ligolo.status == 200
+      retries: 720 # 720 * 5 seconds = 1hour (60*60/5)
+      delay: 5 # Every 5 seconds
+
+    - name: Find Linux ARMv7 agent asset
+      ansible.builtin.set_fact:
+        ligolo_agent_url: >-
+          {{ _result_ligolo.json.assets
+             | map(attribute='browser_download_url')
+             | select('match', '.*ligolo-ng_agent_.*_linux_armv7.*')
+             | first
+             | default('') }}
+
+    - name: Download ligolo
+      ansible.builtin.uri:
+        url: "{{ ligolo_agent_url }}"
+        follow_redirects: safe 
+        method: GET
+        dest: /home/{{ restricted_user }}/ligolo.tar.gz
+      register: _result_ligolo_dl
+      until: _result_ligolo_dl.status == 200
+      retries: 720 # 720 * 5 seconds = 1hour (60*60/5)
+      delay: 5 # Every 5 seconds
+
+    - name: Unarchive only ligolo Agent
+      ansible.builtin.unarchive:
+        src: /home/{{ restricted_user }}/ligolo.tar.gz
+        dest: /home/{{ restricted_user }}/
+        remote_src: yes
+        include:
+          - agent
+      
+    - name: Delete archive
+      ansible.builtin.file:
+        state: absent
+        path: /home/{{ restricted_user }}/ligolo.tar.gz
+    

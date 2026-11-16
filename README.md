@@ -21,6 +21,9 @@ However, you will need to complete:
 - `ansible_ssh_private_key_file`: Path to private key which allows you to connect to the raspberry.
 - `wg_server_ip`: The wireguard VPN server IP you want to use.
 - `wg_server_pubkey`: The wireguard VPN server public key.
+- `wg_preshared_key`: wireguard preshared key to use. 
+- `openobserve_ip`: Openobserve server IP.
+
 
 You can also configure the following, but it is optional:
 
@@ -53,6 +56,9 @@ become_password_low: "XXXXXXXX" # password for restricted user (not the one used
 become_password_root: "XXXXXXXX" # password for root
 wg_private_key: "XXXXXXXXX" # wireguard private key for pi
 wg_preshared_key: "XXXXXXXXXXXX" # shared secret with wireguard server 
+openobserve_username: "XXXXXXXXXX"
+openobserve_password: "XXXXXXXXXX"
+wg_preshared_key: "XXXXXXXXXX" # wireguard preshared key to use. 
 ```
 
 ## Usage

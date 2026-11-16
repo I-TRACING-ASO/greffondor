@@ -40,5 +40,3 @@ all:
         install_image: true
 
         openobserve_ip: <OPNOBSERVE SERVER IP>
-        openobserve_username: <OPNOBSERVE USERNAME>
-        openobserve_password: <OPNOBSERVE PASSWORD>

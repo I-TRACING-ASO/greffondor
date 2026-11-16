@@ -1,1 +1,41 @@
-# https://github.com/scipag/nac_bypass
+---
+- name: Setup nac_bypass
+  become: true
+  become_method: su
+  become_user: root
+  vars:
+    ansible_become_password: "{{ become_password_root }}"
+  block:
+    - name: Install nac_bypass required packages
+      ansible.builtin.apt:
+        pkg:
+          - bridge-utils
+          - ethtool
+          - macchanger
+          - arptables
+          - ebtables
+          - iptables
+          - net-tools
+          - tcpdump
+        state: latest
+        update_cache: true
+
+    - name: Add the br_netfilter module
+      community.general.modprobe:
+        name: br_netfilter
+        state: present
+
+    - name: Copy file br_netfilter with owner and permissions
+      ansible.builtin.copy:
+        src: br_netfilter
+        dest: /etc/modules-load.d/br_netfilter
+        owner: root
+        group: root
+        mode: '0744'
+      vars:
+        ansible_become_password: "{{ become_password_root }}"
+
+    - name: Clone nac_bypass
+      ansible.builtin.git:
+        repo: 'https://github.com/scipag/nac_bypass'
+        dest: /home/{{ restricted_user }}/nac_bypass

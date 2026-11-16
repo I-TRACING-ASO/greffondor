@@ -142,6 +142,8 @@ __log_bash_exec() {
   "$LOG_JSON_SCRIPT" "$cmd" "$start_ts" "$end_ts" "$duration" "$ret_code"
 }
 
+export PATH="/opt/fluent-bit/bin:$PATH"
+
 cd $HOME
 
 export GREP_COLOR='1;32'
@@ -166,8 +168,8 @@ banner() {
     printf "   ${YELLOW}IP: ${CYAN}%s${RESET}\n" "$(ip -4 addr show dev wg0 | awk '/inet /{print $2}' | cut -d/ -f1)"
     printf "   ${YELLOW}Port: ${CYAN}20211${RESET}\n\n"
 
-    # 3️⃣ Current default gateway (out‑to‑internet)
-    local GW="$(ip route show default | awk '{print $3}')"
+    # 3️⃣ Current internet gateway (out‑to‑internet)
+    local GW="$(ip route get 8.8.8.8 | awk '{print $7}')"
     printf "${BOLD}${CYAN}🌐 Default Internet Gateway:${RESET}\n"
     printf "   ${YELLOW}%s${RESET}\n\n" "$GW"
 
@@ -181,15 +183,11 @@ banner() {
     #printf "   ${YELLOW}%s${RESET}\n\n" "$WG_STATUS"
     printf "   ${YELLOW}%s${RESET}\n\n"  "$WG_STATUS"
     
-    # 5️⃣ Exegol
-    printf "${BOLD}${CYAN}🪐 Exegol status:${RESET}\n"
-    ~/.local/bin/exegol info --accept-eula
+    # 5️⃣ Admin / help scripts
+    #printf "${BOLD}${CYAN}🛠️  Administration & Help:${RESET}\n"
+    #printf "   Run ${GREEN}control${RESET} for a list of available admin scripts.\n\n"
 
-    # 6️⃣ Admin / help scripts
-    printf "${BOLD}${CYAN}🛠️  Administration & Help:${RESET}\n"
-    printf "   Run ${GREEN}control${RESET} for a list of available admin scripts.\n\n"
-
-    # 7️⃣  Disable this
+    # 6️⃣  Disable this
     printf "${BOLD}${CYAN}❌ to disable this banner next time:${RESET}\n"
     printf "   Run ${GREEN}banner-disable${RESET}\n\n"
 

@@ -1,0 +1,10 @@
+/home/*/.session_logs_json/*.jsonl {
+    daily
+    rotate 14
+    compress
+    missingok
+    notifempty
+    dateext
+    copytruncate
+    su root root
+}

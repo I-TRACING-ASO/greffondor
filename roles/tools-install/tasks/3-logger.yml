@@ -12,6 +12,8 @@
           - curl
           - jq
           - coreutils
+          - ca-certificates
+          - python3-debian
         state: latest
         update_cache: true
       vars:
@@ -38,3 +40,63 @@
       loop:
         - "{{ restricted_user }}"
         - "{{ ansible_user }}"
+
+    - name: Copy file logrotate conf
+      ansible.builtin.copy:
+        src: shell-command-logger
+        dest: /etc/logrotate.d/shell-command-logger
+        owner: root
+        group: root
+        mode: '0740'
+
+    - name: Create dir for apt keys
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Get Fluent Bit's GPG key
+      ansible.builtin.get_url:
+        url: https://packages.fluentbit.io/fluentbit.key
+        dest: /etc/apt/keyrings/fluentbit-keyring.asc
+        owner: root
+        group: root
+        mode: "0644"
+
+    - name: Add Fluent Bit's repo (DEB822 format, codename auto)
+      ansible.builtin.deb822_repository:
+        name: fluent-bit
+        types: deb
+        uris: "https://packages.fluentbit.io/debian/{{ ansible_facts['distribution_release'] }}"
+        suites: "{{ ansible_facts['distribution_release'] }}"
+        components: main
+        signed_by: /etc/apt/keyrings/fluentbit-keyring.asc
+        state: present
+
+    - name: Installer Fluent Bit
+      ansible.builtin.apt:
+        name: fluent-bit
+        state: present
+        update_cache: true
+
+    - name: Replace secure_path in sudoers
+      ansible.builtin.lineinfile:
+        path: /etc/sudoers
+        regexp: '^Defaults\s+secure_path='
+        line: 'Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/fluent-bit/bin"'
+        validate: '/usr/sbin/visudo -cf %s'
+        backup: true
+
+    - name: Copy fluent bit conf template
+      ansible.builtin.template:
+        src: fluent-bit.conf.j2
+        dest: /etc/fluent-bit/fluent-bit.conf
+        mode: '0644'
+
+    - name: Enable fluentbit service
+      ansible.builtin.systemd_service:
+        name: fluent-bit.service
+        state: started
+        enabled: true

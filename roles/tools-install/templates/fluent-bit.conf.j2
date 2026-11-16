@@ -1,0 +1,28 @@
+[SERVICE]
+    Flush        1
+    Daemon       Off
+    Log_Level    info
+    Parsers_File parsers.conf
+
+[INPUT]
+    Name              tail
+    Tag               shell.logs
+    Path              /home/*/.session_logs_json/*.jsonl
+    Parser            json
+    DB                /var/log/flb_shell_logs.db
+    Refresh_Interval 5
+    Buffer_Chunk_Size 512k
+    Buffer_Max_Size 5M
+
+[OUTPUT]
+    Name  http
+    Match shell.logs
+    Host  {{ openobserve_ip }}
+    Port  5080
+    URI   /api/default/default/_json
+    Format json
+    HTTP_User {{ openobserve_username }}
+    HTTP_Passwd {{ openobserve_password }}
+    Retry_Limit 5
+    compress gzip
+    tls off

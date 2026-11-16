@@ -12,6 +12,8 @@
         pkg:
           - vim
           - tcpdump
+          - git
+          - curl
         state: latest
         update_cache: true
 
@@ -21,8 +23,14 @@
 - name: Setup exegol
   ansible.builtin.include_tasks: "2-exegol.yml"
 
-- name: Setup exegol
+- name: Setup logger
   ansible.builtin.include_tasks: "3-logger.yml"
 
 - name: Setup NetAlertX
   ansible.builtin.include_tasks: "4-NetAlertX.yml"
+
+- name: Install Ligolo
+  ansible.builtin.include_tasks: "5-ligolo.yml"
+
+- name: Install nac_bypass
+  ansible.builtin.include_tasks: "6-nac_bypass.yml"

@@ -11,7 +11,7 @@
           - resolvconf
           - isc-dhcp-client
         state: present
-        update_cache:
+        update_cache: true
 
     - name: Set ipv4.never-default = true on netplan-eth0
       community.general.nmcli:
@@ -27,9 +27,9 @@
         type: ethernet
         state: present
         autoconnect: true
-        method4: manual
-        ip4: 192.168.8.101/24
-        gw4: 192.168.8.1
+        method4: auto # Modif to dhcp
+        # ip4: 192.168.8.101/24 # Modif to dhcp
+        # gw4: 192.168.8.1 # Modif to dhcp
 
     - name: Setup netplan eth0 network
       ansible.builtin.template:

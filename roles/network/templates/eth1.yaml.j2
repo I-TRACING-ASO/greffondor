@@ -5,8 +5,8 @@ network:
       renderer: NetworkManager
       match: {}
       dhcp4: true
-      routes:
-      - to: "0.0.0.0/0"
-        via: "192.168.8.1"
+      # routes:
+      # - to: "0.0.0.0/0"
+      #   via: "192.168.8.1" # Modif to dhcp
       networkmanager:
         name: "netplan-eth1"

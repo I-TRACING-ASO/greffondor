@@ -19,11 +19,9 @@ all:
         wg_server_pubkey: "<WG SERVER PUBKEY>"
 
         # ---- WireGuard client (Pi) ----
+        wg_preshared_key: "<WG PRESHARED KEY>"
         wg_client_ip: 10.0.0.2/32
-
-        # ---- Network Interface ----
-        mobile_iface: eth1 # Interface name : eth1 for Huawei USB dongle, wwan for SIM7600E
-        lan_iface: eth0
+        wg_conf_path: "/etc/wireguard/wg0.conf"
 
         # Hostname and MAC to set
         pi_hostname: DEV-INFRA-004
@@ -40,3 +38,7 @@ all:
         # Tools
         start_NetAlertX_on_provision: false
         install_image: true
+
+        openobserve_ip: <OPNOBSERVE SERVER IP>
+        openobserve_username: <OPNOBSERVE USERNAME>
+        openobserve_password: <OPNOBSERVE PASSWORD>
